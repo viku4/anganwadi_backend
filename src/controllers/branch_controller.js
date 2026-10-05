@@ -1,11 +1,11 @@
 import {
-    createAnganwadiService,
+    createBranchService,
 } from "../services/index.js";
 import { success } from "../utils/response.js";
 
-export const createAnganwadi = async (req, res, next) => {
+export const createBranch = async (req, res, next) => {
     try {
-        const result = await createAnganwadiService(req.user, req.body);
+        const result = await createBranchService(req.user, req.body);
         return success(
             res,
             "Anganwadi and user created successfully",

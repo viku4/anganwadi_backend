@@ -1,18 +1,18 @@
-import { User, Anganwadi, Role } from "../models/index.js";
+import { User, Branch, Role } from "../models/index.js";
 import mongoose from "mongoose";
 
-export const createAnganwadiService = async (curruntUserId, data) => {
+export const createBranchService = async (curruntUserId, data) => {
     const session = await mongoose.startSession();
 
     try {
         session.startTransaction();
         const anganwadiAdmin = await Role.findOne({
-            slug: "anganwadi_admin"
+            slug: "branch_head"
         }).session(session);
-        console.log("anganwadiAdmin :- " + anganwadiAdmin);
+        console.log("curruntUserId :- " + curruntUserId);
 
         // Create Anganwadi
-        const [anganwadi] = await Anganwadi.create(
+        const [branch] = await Branch.create(
             [
                 {
                     name: data.name,
@@ -27,16 +27,16 @@ export const createAnganwadiService = async (curruntUserId, data) => {
             ],
             { session }
         );
-        // console.log("USER DATA:", {
-        //     name: data.partnerName,
-        //     username: data.partnerUsername,
-        //     email: data.partnerEmail,
-        //     phone: data.partnerPhone,
-        //     password: data.partnerPassword,
-        //     roleId: anganwadiAdmin._id,
-        //     anganwadiId: anganwadi,
-        //     createdBy: curruntUserId.id,
-        // });
+        console.log("USER DATA:", {
+            name: data.partnerName,
+            username: data.partnerUsername,
+            email: data.partnerEmail,
+            phone: data.partnerPhone,
+            password: data.partnerPassword,
+            roleId: anganwadiAdmin._id,
+            anganwadiId: branch._id,
+            createdBy: curruntUserId.id,
+        });
         const [user] = await User.create(
             [
                 {
@@ -46,7 +46,7 @@ export const createAnganwadiService = async (curruntUserId, data) => {
                     phone: data.partnerPhone,
                     password: data.partnerPassword,
                     roleId: anganwadiAdmin._id,
-                    anganwadiId: anganwadi._id,
+                    branchId: branch._id,
                     createdBy: curruntUserId.id,
                 },
             ],
@@ -57,7 +57,7 @@ export const createAnganwadiService = async (curruntUserId, data) => {
         await session.commitTransaction();
 
         return {
-            ...anganwadi.toObject(),
+            ...branch.toObject(),
             user: user,
         };
 

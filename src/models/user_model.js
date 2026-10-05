@@ -14,6 +14,16 @@ const userSchema = new mongoose.Schema(
       ref: "Role",
       required: true,
     },
+    anganwadiId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Anganwadi",
+      default: null,
+    },
+    branchId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Branch",
+      default: null,
+    },
     username: {
       type: String,
       required: true,

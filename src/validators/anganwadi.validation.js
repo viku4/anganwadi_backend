@@ -45,7 +45,9 @@ export const createAnganwadiSchema = Joi.object({
         .pattern(/^[0-9]{6}$/)
         .required()
         .messages({
-            "string.pattern.base": "Pincode must be exactly 6 digits"
+            "string.empty": "Pincode is required",
+            "any.required": "Pincode is required",
+            "string.pattern.base": "Pincode must be exactly 6 digits",
         }),
 
     latitude: Joi.number()
@@ -69,7 +71,7 @@ export const createAnganwadiSchema = Joi.object({
 
     partnerUsername: Joi.string()
         .trim()
-        .min(4)
+        .min(2)
         .max(50)
         .required(),
 
@@ -80,7 +82,7 @@ export const createAnganwadiSchema = Joi.object({
 
     partnerEmail: Joi.string()
         .email()
-        .required(),
+        .optional(),
 
     partnerPhone: Joi.string()
         .pattern(/^[6-9][0-9]{9}$/)

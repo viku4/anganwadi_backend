@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const anganwadiSchema = new mongoose.Schema(
+const  branchSchema = new mongoose.Schema(
     {
         name: {
             type: String,
@@ -74,7 +74,7 @@ const anganwadiSchema = new mongoose.Schema(
         timestamps: true,
     }
 );
-anganwadiSchema.index(
+branchSchema.index(
     {
         stateId: 1,
         districtId: 1,
@@ -87,5 +87,5 @@ anganwadiSchema.index(
     }
 );
 
-const Anganwadi = mongoose.model("Anganwadi", anganwadiSchema);
-export default Anganwadi;
+const Branch = mongoose.model("Branch", branchSchema);
+export default Branch;

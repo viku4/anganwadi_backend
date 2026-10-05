@@ -19,7 +19,7 @@ export const getStates = async (req, res, next) => {
 export const getDistricts = async (req, res, next) => {
     try {
         const { state_id } = req.body;
-        console.log("state :-" + state_id);
+        // console.log("state :-" + state_id);
 
         const districts = await getDistrictsService({
             stateId: state_id,
@@ -33,8 +33,8 @@ export const getDistricts = async (req, res, next) => {
 export const getBlocks = async (req, res, next) => {
     try {
         const { state_id, district_id } = req.body;
-        console.log("state" + state_id);
-        console.log("district" + district_id);
+        // console.log("state" + state_id);
+        // console.log("district" + district_id);
 
         const blocks = await getBlocksService({
             stateId: state_id,
@@ -47,6 +47,8 @@ export const getBlocks = async (req, res, next) => {
     }
 };
 export const getVillages = async (req, res, next) => {
+            console.log("state");
+
     try {
         const { state_id = null, district_id = null, block_id = null } = req.body;
         console.log("state" + state_id);
