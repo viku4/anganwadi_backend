@@ -4,6 +4,7 @@ import { seedSuperAdmin } from "../seeds/user_seed.js";
 import { seedStates } from "../seeds/state_seed.js";
 import { seedDistricts } from "../seeds/district_seeds.js";
 import { seedBlocks } from "../seeds/block_seeds.js";
+import { seedVillages } from "../seeds/village_seeds.js";
 const connectDB = async () => {
   try {
     console.log("🔄 Connecting to MongoDB Atlas...");
@@ -18,6 +19,7 @@ const connectDB = async () => {
     // await seedStates();
     // await seedDistricts();
     // await seedBlocks();
+    // await seedVillages();
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error("\n❌ MongoDB Connection Error");

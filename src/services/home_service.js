@@ -1,4 +1,4 @@
-import { State, District, Block } from "../models/index.js";
+import { State, District, Block, Village } from "../models/index.js";
 
 
 export const getStatesService = async () => {
@@ -43,6 +43,30 @@ export const getBlocksService = async ({ stateId, districtId }) => {
         .select("_id name stateId districtId")
         .populate("stateId", "_id name")
         .populate("districtId", "_id name")
+        .sort({ name: 1 })
+        .lean();
+};
+export const getVillagesService = async ({ stateId, districtId, blockId }) => {
+    const filter = {
+        status: 1,
+    };
+
+    if (stateId) {
+        filter.stateId = stateId;
+    }
+
+    if (districtId) {
+        filter.districtId = districtId;
+    }
+    if (blockId) {
+        filter.blockId = blockId;
+    }
+
+    return await Village.find(filter)
+        .select("_id name stateId districtId blockId")
+        .populate("stateId", "_id name")
+        .populate("districtId", "_id name")
+        .populate("blockId", "_id name")
         .sort({ name: 1 })
         .lean();
 };

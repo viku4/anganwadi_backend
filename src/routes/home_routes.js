@@ -21,4 +21,9 @@ router.post(
     verifyAccessToken,
     homeController.getBlocks,
 );
+router.post(
+    "/villages",
+    verifyAccessToken,
+    homeController.getVillages,
+);
 export default router;
