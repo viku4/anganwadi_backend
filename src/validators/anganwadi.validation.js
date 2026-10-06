@@ -1,94 +1,101 @@
 import Joi from "joi";
 
 export const createAnganwadiSchema = Joi.object({
-    name: Joi.string()
-        .trim()
-        .min(2)
-        .max(150)
-        .required(),
+  name: Joi.string().trim().min(2).max(150).required(),
 
-    stateId: Joi.string()
-        .hex()
-        .length(24)
-        .required()
-        .messages({
-            "string.hex": "State must be a valid ObjectId",
-            "string.length": "State must be a valid ObjectId"
-        }),
+  stateId: Joi.string().hex().length(24).required().messages({
+    "string.hex": "State must be a valid ObjectId",
+    "string.length": "State must be a valid ObjectId",
+  }),
 
-    districtId: Joi.string()
-        .hex()
-        .length(24)
-        .required()
-        .messages({
-            "string.hex": "District must be a valid ObjectId",
-            "string.length": "District must be a valid ObjectId"
-        }),
+  districtId: Joi.string().hex().length(24).required().messages({
+    "string.hex": "District must be a valid ObjectId",
+    "string.length": "District must be a valid ObjectId",
+  }),
 
-    blockId: Joi.string()
-        .hex()
-        .length(24)
-        .required()
-        .messages({
-            "string.hex": "Block must be a valid ObjectId",
-            "string.length": "Block must be a valid ObjectId"
-        }),
-    villageId: Joi.string()
-        .hex()
-        .length(24)
-        .required()
-        .messages({
-            "string.hex": "Village must be a valid ObjectId",
-            "string.length": "Village must be a valid ObjectId"
-        }),
-    pincode: Joi.string()
-        .pattern(/^[0-9]{6}$/)
-        .required()
-        .messages({
-            "string.empty": "Pincode is required",
-            "any.required": "Pincode is required",
-            "string.pattern.base": "Pincode must be exactly 6 digits",
-        }),
+  blockId: Joi.string().hex().length(24).required().messages({
+    "string.hex": "Block must be a valid ObjectId",
+    "string.length": "Block must be a valid ObjectId",
+  }),
+  villageId: Joi.string().hex().length(24).required().messages({
+    "string.hex": "Village must be a valid ObjectId",
+    "string.length": "Village must be a valid ObjectId",
+  }),
+  pincode: Joi.string()
+    .pattern(/^[0-9]{6}$/)
+    .required()
+    .messages({
+      "string.empty": "Pincode is required",
+      "any.required": "Pincode is required",
+      "string.pattern.base": "Pincode must be exactly 6 digits",
+    }),
 
-    latitude: Joi.number()
-        .min(-90)
-        .max(90)
-        .optional(),
+  latitude: Joi.number().min(-90).max(90).optional(),
 
-    longitude: Joi.number()
-        .min(-180)
-        .max(180)
-        .optional(),
+  longitude: Joi.number().min(-180).max(180).optional(),
 
-    address: Joi.string()
-        .trim()
-        .max(500)
-        .optional(),
+  address: Joi.string().trim().max(500).optional(),
 
-    partnerName: Joi.string()
-        .trim()
-        .required(),
+  partnerName: Joi.string().trim().required(),
 
-    partnerUsername: Joi.string()
-        .trim()
-        .min(2)
-        .max(50)
-        .required(),
+  partnerUsername: Joi.string().trim().min(2).max(50).required(),
 
-    partnerPassword: Joi.string()
-        .min(6)
-        .max(100)
-        .required(),
+  partnerPassword: Joi.string().min(6).max(100).required(),
 
-    partnerEmail: Joi.string()
-        .email()
-        .optional(),
+  partnerEmail: Joi.string().email().optional(),
 
-    partnerPhone: Joi.string()
-        .pattern(/^[6-9][0-9]{9}$/)
-        .required()
-        .messages({
-            "string.pattern.base":
-                "Partner phone number must be a valid 10-digit mobile number"
-        })
+  partnerPhone: Joi.string()
+    .pattern(/^[6-9][0-9]{9}$/)
+    .required()
+    .messages({
+      "string.pattern.base":
+        "Partner phone number must be a valid 10-digit mobile number",
+    }),
+});
+
+export const updateAnganwadiSchema = Joi.object({
+  name: Joi.string().trim().min(2).max(150).required(),
+
+  stateId: Joi.string().hex().length(24).required().messages({
+    "string.hex": "State must be a valid ObjectId",
+    "string.length": "State must be a valid ObjectId",
+  }),
+
+  districtId: Joi.string().hex().length(24).required().messages({
+    "string.hex": "District must be a valid ObjectId",
+    "string.length": "District must be a valid ObjectId",
+  }),
+
+  blockId: Joi.string().hex().length(24).required().messages({
+    "string.hex": "Block must be a valid ObjectId",
+    "string.length": "Block must be a valid ObjectId",
+  }),
+  villageId: Joi.string().hex().length(24).required().messages({
+    "string.hex": "Village must be a valid ObjectId",
+    "string.length": "Village must be a valid ObjectId",
+  }),
+  pincode: Joi.string()
+    .pattern(/^[0-9]{6}$/)
+    .required()
+    .messages({
+      "string.empty": "Pincode is required",
+      "any.required": "Pincode is required",
+      "string.pattern.base": "Pincode must be exactly 6 digits",
+    }),
+
+  latitude: Joi.number().min(-90).max(90).required().messages({
+    "number.base": "Latitude must be a number",
+    "number.min": "Latitude must be between -90 and 90",
+    "number.max": "Latitude must be between -90 and 90",
+    "any.required": "Latitude is required", 
+  }),
+
+  longitude: Joi.number().min(-180).max(180).required().messages({
+    "number.base": "Longitude must be a number",
+    "number.min": "Longitude must be between -180 and 180",
+    "number.max": "Longitude must be between -180 and 180",
+    "any.required": "Longitude is required",
+  }),
+
+  address: Joi.string().trim().max(500).optional(),
 });

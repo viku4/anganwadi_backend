@@ -10,7 +10,20 @@ export const createBranchService = async (curruntUserId, data) => {
             slug: "branch_head"
         }).session(session);
         console.log("curruntUserId :- " + curruntUserId);
-
+const [user] = await User.create(
+            [
+                {
+                    name: data.partnerName,
+                    username: data.partnerUsername,
+                    email: data.partnerEmail,
+                    phone: data.partnerPhone,
+                    password: data.partnerPassword,
+                    roleId: anganwadiAdmin._id,
+                    createdBy: curruntUserId.id,
+                },
+            ],
+            { session }
+        );
         // Create Anganwadi
         const [branch] = await Branch.create(
             [
@@ -22,6 +35,7 @@ export const createBranchService = async (curruntUserId, data) => {
                     villageId: data.villageId,
                     pincode: data.pincode,
                     address: data.address,
+                    
                     createdBy: curruntUserId.id,
                 },
             ],
@@ -37,21 +51,7 @@ export const createBranchService = async (curruntUserId, data) => {
             anganwadiId: branch._id,
             createdBy: curruntUserId.id,
         });
-        const [user] = await User.create(
-            [
-                {
-                    name: data.partnerName,
-                    username: data.partnerUsername,
-                    email: data.partnerEmail,
-                    phone: data.partnerPhone,
-                    password: data.partnerPassword,
-                    roleId: anganwadiAdmin._id,
-                    branchId: branch._id,
-                    createdBy: curruntUserId.id,
-                },
-            ],
-            { session }
-        );
+        
 
         // Everything successful
         await session.commitTransaction();

@@ -1,16 +1,22 @@
 import express from "express";
 import { anganwadiController } from "../controllers/index.js";
-import { createAnganwadiSchema } from "../validators/index.js";
+import { createAnganwadiSchema,updateAnganwadiSchema } from "../validators/index.js";
 import { validate, verifyAccessToken } from "../middlewares/index.js";
 
 const router = express.Router();
-const anganwadiValidation = validate(createAnganwadiSchema);
-
+const anganwadiCreateValidation = validate(createAnganwadiSchema);
+const anganwadiUpdateValidation = validate(updateAnganwadiSchema);
 router.post(
     "/create",
     verifyAccessToken,
-    anganwadiValidation,
+    anganwadiCreateValidation,
     anganwadiController.createAnganwadi,
 );
 
+router.post(
+    "/update",
+    verifyAccessToken,
+    anganwadiUpdateValidation,
+    anganwadiController.updateAnganwadi,
+);
 export default router;

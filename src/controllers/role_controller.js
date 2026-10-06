@@ -2,39 +2,62 @@ import {
   createRoleService,
   getRolesService,
   getUsersIdService,
+  getRoleBySlug,
 } from "../services/index.js";
 import { success, error } from "../utils/response.js";
 // Create Role
-export const createRole = async (req, res) => {
+// export const createRole = async (req, res) => {
+//   try {
+//     const { id } = req.user;
+//     const user = await getUsersIdService(id);
+//     if (!user) {
+//       return error(res, "User id not valid", 404);
+//     }
+//     if (user.roleId.slug === "superadmin") {
+//       const role = await createRoleService(req.body);
+//       return success(res, "Role created successfully", role, 201);
+//     } else {
+//       return error(res, "Only superadmin can create roles", 403);
+//     }
+//   } catch (err) {
+//     next(error);
+//   }
+// };
+export const getRoles = async (req, res, next) => {
   try {
     const { id } = req.user;
     const user = await getUsersIdService(id);
     if (!user) {
       return error(res, "User id not valid", 404);
     }
-    if (user.roleId.slug === "superadmin") {
-      const role = await createRoleService(req.body);
-      return success(res, "Role created successfully", role, 201);
+    let roles;
+    if (user.roleId.slug === "super_admin") {
+      roles = await getRoleBySlug({
+        slug: {
+          $in: ["account"],
+        },
+      });
+    } else if (user.roleId.slug === "branch_head") {
+      roles = await getRoleBySlug({
+        slug: {
+          $in: ["branch_staff"],
+        },
+      });
+    } else if (user.roleId.slug === "anganwadi_head") {
+      roles = await getRoleBySlug({
+        slug: {
+          $in: ["anganwadi_staff"],
+        },
+      });
     } else {
-      return error(res, "Only superadmin can create roles", 403);
+      roles = [];
     }
-  } catch (err) {
-    next(error);
-  }
-};
-export const getRoles = async (req, res,next) => {
-  try {
-    const { id } = req.user;
-    const user = await getUsersIdService(id);
-    if (!user) {
-      return error(res, "User id not valid", 404);
-    }
-    
-    // if (user.roleId.slug === "superadmin") {
-      const roles = await getRolesService();
-      return success(res, "", roles, 200);
+
+    // if (user.roleId.slug !== "superadmin") {
+    // const roles = await getRolesService();
+    return success(res, "", roles, 200);
     // } else {
-    //   return error(res, "Only superadmin can get roles", 403);
+    //   return error(res, "Superadmin can't get roles", 403);
     // }
   } catch (error) {
     next(error);

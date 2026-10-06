@@ -7,7 +7,7 @@ export const createAnganwadiService = async (curruntUserId, data) => {
     try {
         session.startTransaction();
         const anganwadiAdmin = await Role.findOne({
-            slug: "anganwadi_admin"
+            slug: "anganwadi_head"
         }).session(session);
         console.log("anganwadiAdmin :- " + anganwadiAdmin);
 

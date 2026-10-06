@@ -4,7 +4,10 @@ export const createRoleService = async (data) => {
 };
 
 export const getRolesService = async () => {
-  const roleGet = await Role.find({ slug: { $ne: "super_admin" }, status: 1 });
+  const roleGet = await Role.find({
+    slug: { $nin: ["super_admin", "branch_head", "anganwadi_head"] },
+    status: 1,
+  });
   return roleGet;
 };
 
@@ -16,5 +19,6 @@ export const validateRole = async (roleId) => {
 export const getRoleBySlug = async (filter) => {
   return await Role.find({
     ...filter,
+    status: 1,
   });
-};  
+};

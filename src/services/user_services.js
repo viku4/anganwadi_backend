@@ -58,6 +58,8 @@ export const getUsersService = async (filter, sort = {}) => {
      
       ...filter,
     }).sort(sort)
+    .populate("anganwadiId")
+    .populate("branchId")
       .populate("roleId");
     return users;
   } catch (error) {

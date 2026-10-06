@@ -50,7 +50,11 @@ const  branchSchema = new mongoose.Schema(
             trim: true,
             default: null
         },
-
+branchHeadId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            require: true,
+        },
         status: {
             type: Number,
             enum: [1, 0],

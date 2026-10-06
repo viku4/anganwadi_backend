@@ -12,5 +12,11 @@ router.post(
     anganwadiValidation,
     branchController.createBranch,
 );
+router.post(
+    "/get",
+    verifyAccessToken,
+    anganwadiValidation,
+    branchController.createBranch,
+);
 
 export default router;
