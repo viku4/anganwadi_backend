@@ -71,3 +71,21 @@ export const createAnganwadiService = async (curruntUserId, data) => {
         await session.endSession();
     }
 };
+
+
+
+export const updateAnganwadiService = async (id, data) => {
+  try {
+    const updatedAnganwadi = await Anganwadi.findByIdAndUpdate(
+      id,
+      { $set: data },
+      {
+        new: true,          
+        runValidators: true
+      }
+    );
+    return updatedAnganwadi;
+  } catch (error) {
+    throw error;
+  }
+};

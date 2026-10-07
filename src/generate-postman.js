@@ -2,6 +2,10 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
+// ======================================================
+// PATH SETUP
+// ======================================================
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -14,14 +18,14 @@ const VALIDATORS_DIR = path.join(__dirname, "validators");
 
 const OUTPUT_FILE = path.join(
   __dirname,
-  "hotel-management-api.postman_collection.json",
+  "anganwadi-api.postman_collection.json"
 );
 
 const BASE_URL = "http://localhost:3000";
 const API_PREFIX = "/api";
 
 // ======================================================
-// FILE
+// FILE HELPERS
 // ======================================================
 
 function readFile(file) {
@@ -33,7 +37,7 @@ function exists(file) {
 }
 
 // ======================================================
-// GET ALL JS FILES
+// GET ALL JS FILES RECURSIVELY
 // ======================================================
 
 function getAllJsFiles(dir) {
@@ -52,9 +56,10 @@ function getAllJsFiles(dir) {
 
     if (entry.isDirectory()) {
       files.push(...getAllJsFiles(fullPath));
-    }
-
-    if (entry.isFile() && entry.name.endsWith(".js")) {
+    } else if (
+      entry.isFile() &&
+      entry.name.endsWith(".js")
+    ) {
       files.push(fullPath);
     }
   }
@@ -63,23 +68,42 @@ function getAllJsFiles(dir) {
 }
 
 // ======================================================
-// ROUTES INDEX
+// ESCAPE REGEX
+// ======================================================
+
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// ======================================================
+// GET ROUTE MOUNTS FROM routes/index.js
+//
+// Example:
+//
+// import anganwadiRoutes from "./anganwadi.routes.js";
+//
+// router.use("/anganwadi", anganwadiRoutes);
+//
 // ======================================================
 
 function getRouteMounts() {
   const indexFile = path.join(ROUTES_DIR, "index.js");
 
   if (!exists(indexFile)) {
-    throw new Error(`routes/index.js not found:\n${indexFile}`);
+    throw new Error(
+      `routes/index.js not found:\n${indexFile}`
+    );
   }
 
   const code = readFile(indexFile);
 
   const imports = {};
 
-  // import bookingRoutes from "./booking_routes.js";
+  // Finds:
+  // import anganwadiRoutes from "./anganwadi.routes.js";
 
-  const importRegex = /import\s+(\w+)\s+from\s+["'](.+?)["']\s*;?/g;
+  const importRegex =
+    /import\s+(\w+)\s+from\s+["'](.+?)["']\s*;?/g;
 
   let match;
 
@@ -89,9 +113,11 @@ function getRouteMounts() {
 
   const mounts = [];
 
-  // router.use("/bookings", bookingRoutes);
+  // Finds:
+  // router.use("/anganwadi", anganwadiRoutes);
 
-  const useRegex = /router\.use\s*\(\s*["']([^"']+)["']\s*,\s*(\w+)\s*\)/g;
+  const useRegex =
+    /router\.use\s*\(\s*["']([^"']+)["']\s*,\s*(\w+)\s*\)/g;
 
   while ((match = useRegex.exec(code))) {
     mounts.push({
@@ -123,7 +149,10 @@ function resolveRouteFile(importPath) {
     cleanPath += ".js";
   }
 
-  const filePath = path.join(ROUTES_DIR, cleanPath);
+  const filePath = path.join(
+    ROUTES_DIR,
+    cleanPath
+  );
 
   if (exists(filePath)) {
     return filePath;
@@ -134,6 +163,16 @@ function resolveRouteFile(importPath) {
 
 // ======================================================
 // EXTRACT ROUTES
+//
+// Supports:
+//
+// router.post(
+//   "/create",
+//   verifyAccessToken,
+//   validationMiddleware,
+//   controller.create
+// );
+//
 // ======================================================
 
 function extractRoutes(filePath) {
@@ -141,26 +180,18 @@ function extractRoutes(filePath) {
 
   const routes = [];
 
-  /*
-    Supports:
-
-    router.post(
-      "/checkout",
-      verifyAccessToken,
-      checkoutValidation,
-      bookingController.getCheckOut
-    );
-
-  */
-
-  const regex = /router\.(get|post|put|patch|delete|options|head)\s*\(/g;
+  const regex =
+    /router\.(get|post|put|patch|delete|options|head)\s*\(/g;
 
   let match;
 
   while ((match = regex.exec(code))) {
     const method = match[1].toUpperCase();
 
-    const openIndex = code.indexOf("(", match.index);
+    const openIndex = code.indexOf(
+      "(",
+      match.index
+    );
 
     if (openIndex === -1) {
       continue;
@@ -170,11 +201,18 @@ function extractRoutes(filePath) {
     let quote = null;
     let closeIndex = -1;
 
-    for (let i = openIndex; i < code.length; i++) {
+    for (
+      let i = openIndex;
+      i < code.length;
+      i++
+    ) {
       const char = code[i];
 
+      // Handle strings
       if (
-        (char === '"' || char === "'" || char === "`") &&
+        (char === '"' ||
+          char === "'" ||
+          char === "`") &&
         code[i - 1] !== "\\"
       ) {
         if (quote === null) {
@@ -208,9 +246,14 @@ function extractRoutes(filePath) {
       continue;
     }
 
-    const args = code.substring(openIndex + 1, closeIndex);
+    const args = code.substring(
+      openIndex + 1,
+      closeIndex
+    );
 
-    const pathMatch = args.match(/^\s*["']([^"']+)["']/);
+    const pathMatch = args.match(
+      /^\s*["']([^"']+)["']/
+    );
 
     if (!pathMatch) {
       continue;
@@ -218,7 +261,9 @@ function extractRoutes(filePath) {
 
     const routePath = pathMatch[1];
 
-    const middleware = args.substring(pathMatch[0].length);
+    const middleware = args.substring(
+      pathMatch[0].length
+    );
 
     routes.push({
       method,
@@ -233,18 +278,18 @@ function extractRoutes(filePath) {
 // ======================================================
 // FIND VALIDATION MAPPINGS
 //
-// const bookingValidation =
-//     validate(createBookingValidation);
+// Example:
 //
-// const checkoutValidation =
-//     validate(checkoutSchema);
+// const createValidation =
+//    validate(createAnganwadiSchema);
 //
 // Result:
 //
 // {
-//   bookingValidation: "createBookingValidation",
-//   checkoutValidation: "checkoutSchema"
+//    createValidation:
+//       "createAnganwadiSchema"
 // }
+//
 // ======================================================
 
 function getValidationMappings(routeFile) {
@@ -252,7 +297,8 @@ function getValidationMappings(routeFile) {
 
   const mappings = {};
 
-  const regex = /(?:const|let|var)\s+(\w+)\s*=\s*validate\s*\(\s*(\w+)\s*\)/g;
+  const regex =
+    /(?:const|let|var)\s+(\w+)\s*=\s*validate\s*\(\s*(\w+)\s*\)/g;
 
   let match;
 
@@ -264,14 +310,25 @@ function getValidationMappings(routeFile) {
 }
 
 // ======================================================
-// FIND SCHEMA FROM ROUTE
+// FIND SCHEMA USED BY ROUTE
 // ======================================================
 
-function findSchemaName(routeFile, middleware) {
-  const mappings = getValidationMappings(routeFile);
+function findSchemaName(
+  routeFile,
+  middleware
+) {
+  const mappings =
+    getValidationMappings(routeFile);
 
-  for (const [middlewareName, schemaName] of Object.entries(mappings)) {
-    const regex = new RegExp(`\\b${escapeRegex(middlewareName)}\\b`);
+  for (
+    const [middlewareName, schemaName]
+    of Object.entries(mappings)
+  ) {
+    const regex = new RegExp(
+      `\\b${escapeRegex(
+        middlewareName
+      )}\\b`
+    );
 
     if (regex.test(middleware)) {
       return schemaName;
@@ -282,34 +339,26 @@ function findSchemaName(routeFile, middleware) {
 }
 
 // ======================================================
-// ESCAPE REGEX
-// ======================================================
-
-function escapeRegex(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-// ======================================================
 // FIND SCHEMA FILE
 //
-// Searches:
+// Searches all:
 //
 // validators/*.js
-//
 // validators/**/*.js
 //
-// This means validators/index.js
-// does NOT need to be parsed.
 // ======================================================
 
 function findSchemaFile(schemaName) {
-  const files = getAllJsFiles(VALIDATORS_DIR);
+  const files =
+    getAllJsFiles(VALIDATORS_DIR);
 
   for (const file of files) {
     const code = readFile(file);
 
     const regex = new RegExp(
-      `(?:export\\s+)?(?:const|let|var)\\s+${escapeRegex(schemaName)}\\s*=`,
+      `(?:export\\s+)?(?:const|let|var)\\s+${escapeRegex(
+        schemaName
+      )}\\s*=`
     );
 
     if (regex.test(code)) {
@@ -321,21 +370,17 @@ function findSchemaFile(schemaName) {
 }
 
 // ======================================================
-// EXTRACT JOI OBJECT
-//
-// Finds:
-//
-// export const checkoutSchema = Joi.object({
-//    ...
-// });
-//
+// EXTRACT Joi.object({ ... })
 // ======================================================
 
-function extractJoiObject(code, schemaName) {
+function extractJoiObject(
+  code,
+  schemaName
+) {
   const regex = new RegExp(
     `(?:export\\s+)?(?:const|let|var)\\s+${escapeRegex(
-      schemaName,
-    )}\\s*=\\s*Joi\\.object\\s*\\(`,
+      schemaName
+    )}\\s*=\\s*Joi\\.object\\s*\\(`
   );
 
   const match = regex.exec(code);
@@ -344,9 +389,15 @@ function extractJoiObject(code, schemaName) {
     return null;
   }
 
-  const openParen = code.indexOf("(", match.index);
+  const openParen = code.indexOf(
+    "(",
+    match.index
+  );
 
-  const openBrace = code.indexOf("{", openParen);
+  const openBrace = code.indexOf(
+    "{",
+    openParen
+  );
 
   if (openBrace === -1) {
     return null;
@@ -355,11 +406,17 @@ function extractJoiObject(code, schemaName) {
   let depth = 0;
   let quote = null;
 
-  for (let i = openBrace; i < code.length; i++) {
+  for (
+    let i = openBrace;
+    i < code.length;
+    i++
+  ) {
     const char = code[i];
 
     if (
-      (char === '"' || char === "'" || char === "`") &&
+      (char === '"' ||
+        char === "'" ||
+        char === "`") &&
       code[i - 1] !== "\\"
     ) {
       if (quote === null) {
@@ -383,7 +440,10 @@ function extractJoiObject(code, schemaName) {
       depth--;
 
       if (depth === 0) {
-        return code.substring(openBrace + 1, i);
+        return code.substring(
+          openBrace + 1,
+          i
+        );
       }
     }
   }
@@ -398,40 +458,41 @@ function extractJoiObject(code, schemaName) {
 function extractJoiFields(objectCode) {
   const fields = [];
 
-  /*
-    Matches:
-
-    bookingId: Joi.string()
-
-    additionalCharges: Joi.number()
-
-    gstCharges: Joi.number()
-  */
-
   const regex =
     /(?:^|,)\s*(?:"([^"]+)"|'([^']+)'|([A-Za-z_$][\w$]*))\s*:\s*Joi\.(string|number|integer|boolean|array|object|date|alternatives)\s*\(/g;
 
   let match;
 
   while ((match = regex.exec(objectCode))) {
-    const name = match[1] || match[2] || match[3];
+    const name =
+      match[1] ||
+      match[2] ||
+      match[3];
 
     const type = match[4];
 
-    const start = match.index + match[0].length;
+    const start =
+      match.index +
+      match[0].length;
 
-    const remaining = objectCode.substring(start);
+    const remaining =
+      objectCode.substring(start);
 
-    const nextField = remaining.search(
-      /,\s*(?:"[^"]+"|'[^']+'|[A-Za-z_$][\w$]*)\s*:/,
-    );
+    const nextField =
+      remaining.search(
+        /,\s*(?:"[^"]+"|'[^']+'|[A-Za-z_$][\w$]*)\s*:/
+      );
 
     let expression;
 
     if (nextField === -1) {
       expression = remaining;
     } else {
-      expression = remaining.substring(0, nextField);
+      expression =
+        remaining.substring(
+          0,
+          nextField
+        );
     }
 
     fields.push({
@@ -445,20 +506,28 @@ function extractJoiFields(objectCode) {
 }
 
 // ======================================================
-// JOI EXAMPLE
+// CREATE SAMPLE VALUE FROM JOI
 // ======================================================
 
 function createJoiExample(field) {
-  const { type, expression = "" } = field;
+  const {
+    name,
+    type,
+    expression = "",
+  } = field;
 
-  // ----------------------------------------------------
-  // DEFAULT
-  // ----------------------------------------------------
+  // ====================================================
+  // DEFAULT VALUE
+  // ====================================================
 
-  const defaultMatch = expression.match(/\.default\s*\(\s*([^)]*)\)/);
+  const defaultMatch =
+    expression.match(
+      /\.default\s*\(\s*([^)]*)\)/
+    );
 
   if (defaultMatch) {
-    let value = defaultMatch[1].trim();
+    let value =
+      defaultMatch[1].trim();
 
     if (value === "true") {
       return true;
@@ -468,50 +537,128 @@ function createJoiExample(field) {
       return false;
     }
 
-    if (/^-?\d+(\.\d+)?$/.test(value)) {
+    if (
+      /^-?\d+(\.\d+)?$/.test(value)
+    ) {
       return Number(value);
     }
 
     if (
-      (value.startsWith('"') && value.endsWith('"')) ||
-      (value.startsWith("'") && value.endsWith("'"))
+      (value.startsWith('"') &&
+        value.endsWith('"')) ||
+      (value.startsWith("'") &&
+        value.endsWith("'"))
     ) {
-      return value.substring(1, value.length - 1);
+      return value.substring(
+        1,
+        value.length - 1
+      );
     }
   }
 
-  // ----------------------------------------------------
+  // ====================================================
   // STRING
-  // ----------------------------------------------------
+  // ====================================================
 
   if (type === "string") {
     // MongoDB ObjectId
+
     if (
-      /\.length\s*\(\s*24\s*\)/.test(expression) &&
+      /\.length\s*\(\s*24\s*\)/
+        .test(expression) &&
       /\.hex\s*\(/.test(expression)
     ) {
       return "507f1f77bcf86cd799439011";
     }
 
     // Email
-    if (/\.email\s*\(/.test(expression)) {
+
+    if (
+      /\.email\s*\(/.test(expression)
+    ) {
       return "test@example.com";
     }
 
     // URL
-    if (/\.uri\s*\(/.test(expression)) {
+
+    if (
+      /\.uri\s*\(/.test(expression)
+    ) {
       return "https://example.com";
+    }
+
+    // Pincode
+
+    if (
+      name.toLowerCase() === "pincode"
+    ) {
+      return "700001";
+    }
+
+    // Phone/mobile
+
+    if (
+      name
+        .toLowerCase()
+        .includes("mobile") ||
+      name
+        .toLowerCase()
+        .includes("phone")
+    ) {
+      return "9876543210";
+    }
+
+    // Name
+
+    if (
+      name
+        .toLowerCase()
+        .includes("name")
+    ) {
+      return "Sample Name";
+    }
+
+    // Address
+
+    if (
+      name
+        .toLowerCase()
+        .includes("address")
+    ) {
+      return "Sample Address";
     }
 
     return "string";
   }
 
-  // ----------------------------------------------------
+  // ====================================================
   // NUMBER
-  // ----------------------------------------------------
+  // ====================================================
 
-  if (type === "number" || type === "integer") {
-    const min = expression.match(/\.min\s*\(\s*(-?\d+(?:\.\d+)?)\s*\)/);
+  if (
+    type === "number" ||
+    type === "integer"
+  ) {
+    // Better examples for location
+
+    if (
+      name.toLowerCase() ===
+      "latitude"
+    ) {
+      return 22.5726;
+    }
+
+    if (
+      name.toLowerCase() ===
+      "longitude"
+    ) {
+      return 88.3639;
+    }
+
+    const min =
+      expression.match(
+        /\.min\s*\(\s*(-?\d+(?:\.\d+)?)\s*\)/
+      );
 
     if (min) {
       return Number(min[1]);
@@ -520,91 +667,133 @@ function createJoiExample(field) {
     return 0;
   }
 
-  // ----------------------------------------------------
+  // ====================================================
   // BOOLEAN
-  // ----------------------------------------------------
+  // ====================================================
 
   if (type === "boolean") {
     return true;
   }
 
-  // ----------------------------------------------------
+  // ====================================================
   // ARRAY
-  // ----------------------------------------------------
+  // ====================================================
 
   if (type === "array") {
     return [];
   }
 
-  // ----------------------------------------------------
+  // ====================================================
   // OBJECT
-  // ----------------------------------------------------
+  // ====================================================
 
   if (type === "object") {
     return {};
   }
 
-  // ----------------------------------------------------
+  // ====================================================
   // DATE
-  // ----------------------------------------------------
+  // ====================================================
 
   if (type === "date") {
-    return "2026-08-28T00:00:00.000Z";
+    return new Date().toISOString();
+  }
+
+  // ====================================================
+  // ALTERNATIVES
+  // ====================================================
+
+  if (type === "alternatives") {
+    return null;
   }
 
   return "string";
 }
 
 // ======================================================
-// GENERATE BODY
+// GENERATE REQUEST BODY
 // ======================================================
 
-function generateBody(routeFile, middleware) {
-  const schemaName = findSchemaName(routeFile, middleware);
+function generateBody(
+  routeFile,
+  middleware
+) {
+  const schemaName =
+    findSchemaName(
+      routeFile,
+      middleware
+    );
 
   if (!schemaName) {
-    console.log("    Schema: none");
+    console.log(
+      "    Schema: none"
+    );
 
     return {};
   }
 
-  console.log(`    Schema: ${schemaName}`);
+  console.log(
+    `    Schema: ${schemaName}`
+  );
 
-  const validatorFile = findSchemaFile(schemaName);
+  const validatorFile =
+    findSchemaFile(schemaName);
 
   if (!validatorFile) {
-    console.log(`    Validator: NOT FOUND`);
+    console.log(
+      "    Validator: NOT FOUND"
+    );
 
     return {};
   }
 
-  console.log(`    Validator: ${validatorFile}`);
+  console.log(
+    `    Validator: ${validatorFile}`
+  );
 
-  const code = readFile(validatorFile);
+  const code =
+    readFile(validatorFile);
 
-  const objectCode = extractJoiObject(code, schemaName);
+  const objectCode =
+    extractJoiObject(
+      code,
+      schemaName
+    );
 
   if (!objectCode) {
-    console.log(`    Joi object: NOT FOUND`);
+    console.log(
+      "    Joi object: NOT FOUND"
+    );
 
     return {};
   }
 
-  const fields = extractJoiFields(objectCode);
+  const fields =
+    extractJoiFields(objectCode);
 
-  console.log(`    Fields: ${fields.length}`);
+  console.log(
+    `    Fields: ${fields.length}`
+  );
 
   const body = {};
 
   for (const field of fields) {
-    body[field.name] = createJoiExample(field);
+    body[field.name] =
+      createJoiExample(field);
   }
 
   return body;
 }
 
 // ======================================================
-// CONVERT PATH
+// CONVERT EXPRESS PATH TO POSTMAN PATH
+//
+// /update/:id
+//
+// becomes
+//
+// /update/{{id}}
+//
 // ======================================================
 
 function convertPath(routePath) {
@@ -612,7 +801,9 @@ function convertPath(routePath) {
     .split("/")
     .map((part) => {
       if (part.startsWith(":")) {
-        return `{{${part.substring(1)}}}`;
+        return `{{${part.substring(
+          1
+        )}}}`;
       }
 
       return part;
@@ -621,24 +812,30 @@ function convertPath(routePath) {
 }
 
 // ======================================================
-// POSTMAN URL
+// CREATE POSTMAN URL
 // ======================================================
 
 function createUrl(fullPath) {
   return {
-    raw: `${BASE_URL}${fullPath}`,
+    raw: `{{baseUrl}}${fullPath}`,
 
-    host: [BASE_URL.replace(/^https?:\/\//, "")],
+    host: ["{{baseUrl}}"],
 
-    path: fullPath.split("/").filter(Boolean),
+    path: fullPath
+      .split("/")
+      .filter(Boolean),
   };
 }
 
 // ======================================================
-// REQUEST
+// CREATE POSTMAN REQUEST
 // ======================================================
 
-function createRequest(route, fullPath, routeFile) {
+function createRequest(
+  route,
+  fullPath,
+  routeFile
+) {
   const request = {
     name: `${route.method} ${fullPath}`,
 
@@ -648,7 +845,8 @@ function createRequest(route, fullPath, routeFile) {
       header: [
         {
           key: "Authorization",
-          value: "Bearer {{accessToken}}",
+          value:
+            "Bearer {{accessToken}}",
           type: "text",
         },
       ],
@@ -658,22 +856,33 @@ function createRequest(route, fullPath, routeFile) {
   };
 
   // ====================================================
-  // BODY
+  // BODY FOR POST / PUT / PATCH
   // ====================================================
 
-  if (["POST", "PUT", "PATCH"].includes(route.method)) {
+  if (
+    ["POST", "PUT", "PATCH"].includes(
+      route.method
+    )
+  ) {
     request.request.header.push({
       key: "Content-Type",
       value: "application/json",
       type: "text",
     });
 
-    const body = generateBody(routeFile, route.middleware);
+    const body = generateBody(
+      routeFile,
+      route.middleware
+    );
 
     request.request.body = {
       mode: "raw",
 
-      raw: JSON.stringify(body, null, 2),
+      raw: JSON.stringify(
+        body,
+        null,
+        2
+      ),
 
       options: {
         raw: {
@@ -687,21 +896,32 @@ function createRequest(route, fullPath, routeFile) {
 }
 
 // ======================================================
-// MAIN
+// GENERATE POSTMAN COLLECTION
 // ======================================================
 
 function generatePostmanCollection() {
-  console.log("======================================");
+  console.log(
+    "======================================"
+  );
 
-  console.log(" Postman Collection Generator");
+  console.log(
+    " Anganwadi Postman Collection Generator"
+  );
 
-  console.log("======================================");
+  console.log(
+    "======================================"
+  );
 
-  console.log("\nReading routes/index.js...");
+  console.log(
+    "\nReading routes/index.js..."
+  );
 
-  const mounts = getRouteMounts();
+  const mounts =
+    getRouteMounts();
 
-  console.log(`Found ${mounts.length} route groups.`);
+  console.log(
+    `Found ${mounts.length} route groups.`
+  );
 
   const folders = [];
 
@@ -712,61 +932,89 @@ function generatePostmanCollection() {
   // ====================================================
 
   for (const mount of mounts) {
-    console.log(`\n======================================`);
+    console.log(
+      "\n======================================"
+    );
 
-    console.log(`Scanning ${mount.prefix}`);
+    console.log(
+      `Scanning ${mount.prefix}`
+    );
 
-    const routeFile = resolveRouteFile(mount.importPath);
+    const routeFile =
+      resolveRouteFile(
+        mount.importPath
+      );
 
     if (!routeFile) {
-      console.log(`Route file not found`);
+      console.log(
+        "Route file not found"
+      );
 
       continue;
     }
 
-    console.log(`File: ${routeFile}`);
+    console.log(
+      `File: ${routeFile}`
+    );
 
-    const routes = extractRoutes(routeFile);
+    const routes =
+      extractRoutes(routeFile);
 
-    console.log(`Found ${routes.length} APIs`);
+    console.log(
+      `Found ${routes.length} APIs`
+    );
 
     const folder = {
-      name: mount.prefix.replace(/^\/+/, "").replace(/\/+$/, "") || "General",
+      name:
+        mount.prefix
+          .replace(/^\/+/, "")
+          .replace(/\/+$/, "") ||
+        "General",
 
       item: [],
     };
 
     // ==================================================
-    // APIs
+    // CREATE REQUESTS
     // ==================================================
 
     for (const route of routes) {
-      const convertedPath = convertPath(route.path);
+      const convertedPath =
+        convertPath(route.path);
 
-      const fullPath = `${API_PREFIX}${mount.prefix}${convertedPath}`.replace(
-        /\/+/g,
-        "/",
+      const fullPath =
+        `${API_PREFIX}${mount.prefix}${convertedPath}`
+          .replace(/\/+/g, "/");
+
+      console.log(
+        `\n  ${route.method} ${fullPath}`
       );
 
-      console.log(`\n  ${route.method} ${fullPath}`);
-
-      const request = createRequest(route, fullPath, routeFile);
+      const request =
+        createRequest(
+          route,
+          fullPath,
+          routeFile
+        );
 
       folder.item.push(request);
 
       totalRoutes++;
     }
 
-    folders.push(folder);
+    // Don't create empty folders
+    if (folder.item.length > 0) {
+      folders.push(folder);
+    }
   }
 
   // ====================================================
-  // POSTMAN COLLECTION
+  // COLLECTION
   // ====================================================
 
   const collection = {
     info: {
-      name: "Hotel Management API",
+      name: "Anganwadi API",
 
       description:
         "Generated automatically from Express routes and Joi validators.",
@@ -792,19 +1040,37 @@ function generatePostmanCollection() {
     item: folders,
   };
 
-  fs.writeFileSync(OUTPUT_FILE, JSON.stringify(collection, null, 2), "utf8");
+  // ====================================================
+  // WRITE FILE
+  // ====================================================
 
-  console.log("\n======================================");
+  fs.writeFileSync(
+    OUTPUT_FILE,
+    JSON.stringify(
+      collection,
+      null,
+      2
+    ),
+    "utf8"
+  );
+
+  console.log(
+    "\n======================================"
+  );
 
   console.log(" DONE");
 
-  console.log("======================================");
+  console.log(
+    "======================================"
+  );
 
-  console.log(`Total APIs: ${totalRoutes}`);
+  console.log(
+    `Total APIs: ${totalRoutes}`
+  );
 
-  console.log(`\nCollection:`);
-
-  console.log(OUTPUT_FILE);
+  console.log(
+    `Collection: ${OUTPUT_FILE}`
+  );
 }
 
 // ======================================================
@@ -814,7 +1080,9 @@ function generatePostmanCollection() {
 try {
   generatePostmanCollection();
 } catch (error) {
-  console.error("\nERROR:");
+  console.error(
+    "\nPostman generation failed:"
+  );
 
   console.error(error);
 
