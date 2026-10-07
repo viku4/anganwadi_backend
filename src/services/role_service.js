@@ -5,7 +5,7 @@ export const createRoleService = async (data) => {
 
 export const getRolesService = async () => {
   const roleGet = await Role.find({
-    slug: { $nin: ["super_admin", "branch_head", "anganwadi_head"] },
+    slug: { $nin: ["super_admin", "branch_head", "sevika"] },
     status: 1,
   });
   return roleGet;

@@ -19,4 +19,9 @@ router.post(
     anganwadiUpdateValidation,
     anganwadiController.updateAnganwadi,
 );
+router.post(
+    "/get-by-id",
+    verifyAccessToken,
+    anganwadiController.getByIdAnganwadi,
+);
 export default router;

@@ -47,10 +47,10 @@ export const createUser = async (req, res, next) => {
 
       const createPermissions = {
         super_admin: ["account"],
-        branch_head: ["branch_staff", "anganwadi_staff"],
-        branch_staff: ["anganwadi_staff"],
+        branch_head: ["branch_staff", "sahayika"],
+        branch_staff: ["sahayika"],
         branch_account: [],
-        anganwadi_staff: [],
+        sahayika: [],
       };
 
       if (!createPermissions[currentRole]) {
@@ -62,7 +62,7 @@ export const createUser = async (req, res, next) => {
       }
       if (user.roleId.slug === "branch_head") {
         userData.branchId = user.branchId._id;
-      } else if (user.roleId.slug === "anganwadi_head") {
+      } else if (user.roleId.slug === "sevika") {
         userData.anganwadiId = user.anganwadiId._id;
       }
 
@@ -150,7 +150,7 @@ export const getUsers = async (req, res, next) => {
         "branch_head",
         "branch_staff",
         "account",
-        "anganwadi_head",
+        "sevika",
         "anganwadi_worker",
       ],
 

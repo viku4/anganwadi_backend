@@ -21,14 +21,7 @@ export const createAnganwadiSchema = Joi.object({
     "string.hex": "Village must be a valid ObjectId",
     "string.length": "Village must be a valid ObjectId",
   }),
-  pincode: Joi.string()
-    .pattern(/^[0-9]{6}$/)
-    .required()
-    .messages({
-      "string.empty": "Pincode is required",
-      "any.required": "Pincode is required",
-      "string.pattern.base": "Pincode must be exactly 6 digits",
-    }),
+ 
 
   latitude: Joi.number().min(-90).max(90).optional(),
 

@@ -1,13 +1,19 @@
 import mongoose from "mongoose";
 
-const  branchSchema = new mongoose.Schema(
+const branchSchema = new mongoose.Schema(
     {
         name: {
             type: String,
             required: true,
             trim: true
         },
-
+        code: {
+            type: String,
+            unique: true,
+            required: true,
+            trim: true,
+            uppercase: true,
+        },
         stateId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "State",
@@ -23,11 +29,6 @@ const  branchSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Block",
             required: true,
-        },
-
-        pincode: {
-            type: String,
-            trim: true
         },
 
         villageId: {
@@ -50,10 +51,10 @@ const  branchSchema = new mongoose.Schema(
             trim: true,
             default: null
         },
-branchHeadId: {
+        userId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
-            require: true,
+            default: null,
         },
         status: {
             type: Number,

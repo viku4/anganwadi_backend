@@ -7,7 +7,13 @@ const anganwadiSchema = new mongoose.Schema(
             required: true,
             trim: true
         },
-
+        code: {
+            type: String,
+            unique: true,
+            required: true,
+            trim: true,
+            uppercase: true,
+        },
         stateId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "State",
@@ -18,6 +24,11 @@ const anganwadiSchema = new mongoose.Schema(
             ref: "District",
             required: true,
         },
+        userId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            default: null,
+        },
 
         blockId: {
             type: mongoose.Schema.Types.ObjectId,
@@ -25,10 +36,6 @@ const anganwadiSchema = new mongoose.Schema(
             required: true,
         },
 
-        pincode: {
-            type: String,
-            trim: true
-        },
 
         villageId: {
             type: mongoose.Schema.Types.ObjectId,

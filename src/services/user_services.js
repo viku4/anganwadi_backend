@@ -13,7 +13,9 @@ export const checkUserExistsService = async (filter = {}) => {
 export const loginUserService = async ({ username }) => {
   try {
     const user = await User.findOne({ username })
-      .populate("roleId");
+      .populate("roleId")
+      .populate("anganwadiId")
+      .populate("branchId");
     return user;
 
   } catch (error) {
@@ -55,11 +57,11 @@ export const updateUserService = async (id, userData) => {
 export const getUsersService = async (filter, sort = {}) => {
   try {
     const users = await User.find({
-     
+
       ...filter,
     }).sort(sort)
-    .populate("anganwadiId")
-    .populate("branchId")
+      .populate("anganwadiId")
+      .populate("branchId")
       .populate("roleId");
     return users;
   } catch (error) {

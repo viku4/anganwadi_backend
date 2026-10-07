@@ -26,4 +26,9 @@ router.post(
     verifyAccessToken,
     homeController.getVillages,
 );
+router.get(
+    "/data",
+    verifyAccessToken,
+    homeController.getHomeData,
+);
 export default router;

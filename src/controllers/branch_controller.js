@@ -8,7 +8,7 @@ export const createBranch = async (req, res, next) => {
         const result = await createBranchService(req.user, req.body);
         return success(
             res,
-            "Anganwadi and user created successfully",
+            "Branch and user created successfully",
             result,
             201
         );

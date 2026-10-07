@@ -2,9 +2,11 @@ import {
     getStatesService,
     getDistrictsService,
     getBlocksService,
-    getVillagesService
+    getUsersIdService,
+    getVillagesService,
+    findByIdAnganwadiService,
 } from "../services/index.js";
-import { success, error } from "../utils/response.js";
+import { success } from "../utils/response.js";
 
 export const getStates = async (req, res, next) => {
     try {
@@ -47,7 +49,7 @@ export const getBlocks = async (req, res, next) => {
     }
 };
 export const getVillages = async (req, res, next) => {
-            console.log("state");
+    console.log("state");
 
     try {
         const { state_id = null, district_id = null, block_id = null } = req.body;
@@ -62,6 +64,25 @@ export const getVillages = async (req, res, next) => {
         });
 
         return success(res, "", blocks, 200);
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+export const getHomeData = async (req, res, next) => {
+    try {
+        const { id } = req.user;
+        const user = await getUsersIdService(id);
+        if (!user) {
+            return error(res, "User id not valid", 404);
+        }
+        console.log(id);
+        console.log(user);
+
+        const updatedData = await findByIdAnganwadiService(user.anganwadiId);
+
+        return success(res, "Anganwadi get successfully", updatedData, 200);
     } catch (error) {
         next(error);
     }

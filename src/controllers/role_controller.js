@@ -43,10 +43,10 @@ export const getRoles = async (req, res, next) => {
           $in: ["branch_staff"],
         },
       });
-    } else if (user.roleId.slug === "anganwadi_head") {
+    } else if (user.roleId.slug === "sevika") {
       roles = await getRoleBySlug({
         slug: {
-          $in: ["anganwadi_staff"],
+          $in: ["sahayika"],
         },
       });
     } else {
